@@ -1,4 +1,4 @@
-Ecoleta
+**Ecoleta**
 A project for networking organic and inorganic waste collection points ♻
 
 License MIT
