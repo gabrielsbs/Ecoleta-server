@@ -18,7 +18,7 @@ This app features all the latest tools and practices in mobile development!
 📄 Knex — A SQL query builder for a lot of SQL databases
 💻 Getting started
 Clone this repo using https://github.com/gabrielsbs/NLW.git
-Move to the appropiate directory: cd backend
+Move to the appropiate directory: cd server
 Run yarn or npm install to install the dependencies
 Run knex:migrate to create the tables of the database
 Run knex:seed to create the seeds
