@@ -32,4 +32,4 @@ After the merge of your pull request is done, you can delete your branch.
 License
 This project is licensed under the MIT License - see the LICENSE page for details.
 
-Made with 💜 by Gabriel Gonçalves
+Made by Gabriel Santos
