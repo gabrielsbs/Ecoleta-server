@@ -1,7 +1,8 @@
 import * as React from "react";
 import { FiLogIn } from "react-icons/fi";
-import "./Home.css";
+import "./style.css";
 import logo from "../../assets/logo.svg";
+import { Link } from "react-router-dom";
 
 export interface HomeProps {}
 
@@ -18,12 +19,12 @@ const Home = () => {
             Ajudamos pessoas a encontrarem pontos de coleta de forma eficiente.
           </p>
 
-          <a href="/cadastro">
+          <Link to="/create-point">
             <span>
               <FiLogIn />
             </span>
             <strong>Cadastre um ponto de coleta</strong>
-          </a>
+          </Link>
         </main>
       </div>
     </div>
