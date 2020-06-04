@@ -6,7 +6,7 @@ import "./style.css";
 import logo from "../../assets/logo.svg";
 import { loadItems, loadUF, loadCity, savePoint } from "../../services/api";
 import { LeafletMouseEvent } from "leaflet";
-import { FormInput, FormSelect } from "../../components";
+import { FormInput, FormSelect, ItemsGrid } from "../../components";
 import { UF, City, Item } from "../../models/points.models";
 
 const CreatePoint = () => {
@@ -52,6 +52,10 @@ const CreatePoint = () => {
     });
   }, [selectedUf]);
 
+  const hasItemBeenSelected = (id: number) => {
+    return selectedItems.includes(id);
+  };
+
   const handleSelectedUfChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setSelectedUf(event.target.value);
   };
@@ -70,7 +74,7 @@ const CreatePoint = () => {
   };
 
   const handleItemClick = (id: number) => {
-    if (selectedItems.includes(id)) {
+    if (hasItemBeenSelected(id)) {
       const filteredItems = selectedItems.filter((item) => item !== id);
       setSelectedItems(filteredItems);
     } else {
@@ -186,20 +190,11 @@ const CreatePoint = () => {
             <span>Selecione o um ou mais itens abaixo</span>
           </legend>
 
-          <ul className="items-grid">
-            {items.map((item) => {
-              return (
-                <li
-                  key={item.id}
-                  onClick={() => handleItemClick(item.id)}
-                  className={selectedItems.includes(item.id) ? "selected" : ""}
-                >
-                  <img src={item.image_url} alt={item.title} />
-                  <span>{item.title}</span>
-                </li>
-              );
-            })}
-          </ul>
+          <ItemsGrid
+            handleItemClick={handleItemClick}
+            hasItemBeenSelected={hasItemBeenSelected}
+            items={items}
+          />
         </fieldset>
 
         <button type="submit" onClick={handleSubmit}>
