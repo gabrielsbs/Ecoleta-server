@@ -14,5 +14,5 @@ export interface Point {
   longitude: number
   city: string
   uf: string
-  items: 
+  items: string
 }

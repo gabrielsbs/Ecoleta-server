@@ -1,12 +1,14 @@
 import { Request, Response } from 'express'
 import knex from '../database/connection'
+import { Point } from '../models'
 
 class PointController {
   async create(request: Request, response: Response) {
-    const { name, email, whatsapp, latitude, longitude, city, uf, items } = request.body
+    const { name, email, whatsapp, latitude, longitude, city, uf, items } = request.body as Point
 
     const existentItems = await knex('items').select('id')
-    items.map(itemId => {
+    const itemArray = items.split(',').map(item => Number(item.trim()))
+    itemArray.map(itemId => {
       if (existentItems.find(item => item.id === itemId) === undefined) {
         return response.json({ sucess: false })
       }
@@ -15,8 +17,7 @@ class PointController {
     const trx = await knex.transaction()
     try {
       const insertedIds = await trx('points').insert({
-        image:
-          'https://images.unsplash.com/photo-1556767576-5ec41e3239ea?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60',
+        image: request.file.filename,
         name,
         email,
         whatsapp,
@@ -26,7 +27,7 @@ class PointController {
         uf
       })
       const point_id = insertedIds[0]
-      const pointItems = items.map((item_id: number) => {
+      const pointItems = itemArray.map((item_id: number) => {
         return {
           item_id,
           point_id
@@ -50,9 +51,14 @@ class PointController {
       return response.json({ message: 'Point not found' })
     }
 
+    const serializedPoint = {
+      ...point,
+      image_url: `http://192.168.0.53:3333/uploads/${point.image}`
+    }
+
     const items = await knex('items').join('point_item', 'items.id', '=', 'point_item.item_id').where('point_item.point_id', '=', id)
 
-    return response.json({ point, items })
+    return response.json({ point: serializedPoint, items })
   }
 
   async index(request: Request, response: Response) {
@@ -71,7 +77,14 @@ class PointController {
         .distinct()
         .select('points.*')
 
-      return response.json(points)
+      const serializedPoints = points.map(point => {
+        return {
+          ...point,
+          image_url: `http://192.168.0.53:3333/uploads/${point.image}`
+        }
+      })
+
+      return response.json(serializedPoints)
     } catch (e) {
       console.log(e)
     }

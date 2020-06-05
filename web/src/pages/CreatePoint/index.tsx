@@ -1,12 +1,15 @@
 import React, { useEffect, useState, ChangeEvent, FormEvent } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { Map, TileLayer, Marker } from "react-leaflet";
+import { Modal } from "react-responsive-modal";
+import "react-responsive-modal/styles.css";
+import { FiCheckCircle } from "react-icons/fi";
 import "./style.css";
 import logo from "../../assets/logo.svg";
 import { loadItems, loadUF, loadCity, savePoint } from "../../services/api";
 import { LeafletMouseEvent } from "leaflet";
-import { FormInput, FormSelect, ItemsGrid } from "../../components";
+import { FormInput, FormSelect, ItemsGrid, Dropzone } from "../../components";
 import { UF, City, Item } from "../../models/points.models";
 
 const CreatePoint = () => {
@@ -15,20 +18,20 @@ const CreatePoint = () => {
   const [selectedUf, setSelectedUf] = useState<string>("0");
   const [cities, setCities] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("0");
+  const [visibleModal, setModalVisible] = useState<boolean>(false);
   const [selectedPosition, setPostion] = useState<[number, number]>([0, 0]);
   const [initialPosition, setInitialPostion] = useState<[number, number]>([
     0,
     0,
   ]);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File>();
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     whatsapp: "",
   });
-
-  const history = useHistory();
 
   useEffect(() => {
     loadUF().then((response) => {
@@ -82,7 +85,20 @@ const CreatePoint = () => {
     }
   };
 
-  const handleSubmit = (event: FormEvent) => {
+  const clearData = () => {
+    setSelectedUf("0");
+    setSelectedItems([]);
+    setSelectedCity("0");
+    setCities([]);
+    setPostion([0, 0]);
+    setFormData({
+      name: "",
+      email: "",
+      whatsapp: "",
+    });
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const { name, email, whatsapp } = formData;
     const uf = selectedUf;
@@ -90,23 +106,25 @@ const CreatePoint = () => {
     const [latitude, longitude] = selectedPosition;
     const items = selectedItems;
 
-    const data = {
-      name,
-      email,
-      whatsapp,
-      uf,
-      city,
-      latitude,
-      longitude,
-      items,
-    };
+    const data = new FormData();
 
-    const sucess = savePoint(data);
-
-    if (sucess) {
-      alert("Ponto de coleta criado");
+    data.append("name", name);
+    data.append("email", email);
+    data.append("whatsapp", whatsapp);
+    data.append("uf", uf);
+    data.append("city", city);
+    data.append("latitude", String(latitude));
+    data.append("longitude", String(longitude));
+    data.append("items", items.join(","));
+    if (selectedFile) {
+      data.append("image", selectedFile);
     }
-    history.push("/");
+
+    const sucess = await savePoint(data);
+    if (sucess) {
+      setModalVisible(true);
+      clearData();
+    }
   };
 
   return (
@@ -124,6 +142,8 @@ const CreatePoint = () => {
           Cadastro do <br /> ponto de coleta
         </h1>
 
+        <Dropzone onImageUploaded={setSelectedFile} />
+
         <fieldset>
           <legend>
             <h2>Dados</h2>
@@ -133,6 +153,7 @@ const CreatePoint = () => {
             name="name"
             type="text"
             text="Nome da Entidade"
+            value={formData.name}
             handleInputChange={handleInputChange}
           />
 
@@ -141,12 +162,14 @@ const CreatePoint = () => {
               name="email"
               type="email"
               text="Email"
+              value={formData.email}
               handleInputChange={handleInputChange}
             />
             <FormInput
               name="whatsapp"
               type="text"
               text="Whatsapp"
+              value={formData.whatsapp}
               handleInputChange={handleInputChange}
             />
           </div>
@@ -201,6 +224,21 @@ const CreatePoint = () => {
           Cadastrar ponto de coleta
         </button>
       </form>
+
+      <Modal
+        open={visibleModal}
+        onClose={() => setModalVisible(false)}
+        closeOnOverlayClick
+        center
+        showCloseIcon={false}
+        classNames={{
+          overlay: "customOverlay",
+          modal: "customModal",
+        }}
+      >
+        <FiCheckCircle size={53} color="#34CB79" />
+        <h2 className="modalText">Cadastro concluído!</h2>
+      </Modal>
     </div>
   );
 };
